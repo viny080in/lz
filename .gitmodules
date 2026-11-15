@@ -1,0 +1,3 @@
+[submodule "azemu"]
+	path = azemu
+	url = https://github.com/ZeroDeth/azemu.git

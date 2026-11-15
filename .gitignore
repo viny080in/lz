@@ -28,5 +28,3 @@ plan.json
 **/terraform.tfvars
 **/*.tfvars
 !**/*.tfvars.example
-# Local Azemu development environment
-/azemu/
