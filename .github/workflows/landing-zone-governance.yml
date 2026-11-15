@@ -1,7 +1,8 @@
-
 name: Azure Landing Zone Governance
 
 on:
+  workflow_dispatch:
+
   push:
     paths:
       - 'mini-azure-landing-zone/**'
