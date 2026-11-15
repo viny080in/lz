@@ -1,0 +1,91 @@
+
+name: Azure Landing Zone Governance
+
+on:
+  push:
+    paths:
+      - 'mini-azure-landing-zone/**'
+      - '.github/workflows/landing-zone-governance.yml'
+
+  pull_request:
+    paths:
+      - 'mini-azure-landing-zone/**'
+      - '.github/workflows/landing-zone-governance.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  governance-validation:
+
+    name: Landing Zone Policy Validation
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mini-azure-landing-zone
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.13.9
+
+      - name: Check OpenTofu formatting
+        run: tofu fmt -check -recursive
+
+      - name: Initialize OpenTofu
+        run: tofu init -backend=false -input=false
+
+      - name: Validate OpenTofu configuration
+        run: tofu validate
+
+      - name: Validate OPA policy syntax
+        run: |
+          docker run --rm \
+            -v "$PWD:/project" \
+            openpolicyagent/opa:1.22.4 \
+            check --strict \
+            /project/governance/policies/landing_zone.rego
+
+      - name: Test compliant infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESULT=$(docker run --rm \
+            -v "$PWD:/project" \
+            openpolicyagent/opa:1.22.4 \
+            eval --format=json \
+            --data /project/governance/policies/landing_zone.rego \
+            --input /project/tests/valid-plan.json \
+            "data.landingzone.deny")
+
+          echo "$RESULT" | jq -e \
+            '[.result[]?.expressions[]?.value[]?] | length == 0'
+
+          echo "Positive governance test passed."
+
+      - name: Test non-compliant infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESULT=$(docker run --rm \
+            -v "$PWD:/project" \
+            openpolicyagent/opa:1.22.4 \
+            eval --format=json \
+            --data /project/governance/policies/landing_zone.rego \
+            --input /project/tests/invalid-plan.json \
+            "data.landingzone.deny")
+
+          echo "$RESULT" | jq -e \
+            '[.result[]?.expressions[]?.value[]?] |
+            index("Invalid environment tag on resource: rg-lz-dev") != null'
+
+          echo "Negative governance test passed."

@@ -1,0 +1,30 @@
+
+# OpenTofu / Terraform
+**/.terraform/
+
+# State files
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Execution plans
+tfplan
+*.tfplan
+plan.json
+
+# Sensitive environment files
+.env
+.env.*
+!.env.example
+
+# Local editor files
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# OpenTofu local variables
+**/terraform.tfvars
+**/*.tfvars
+!**/*.tfvars.example

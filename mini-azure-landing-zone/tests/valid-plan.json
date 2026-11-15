@@ -1,0 +1,24 @@
+
+{
+  "resource_changes": [
+    {
+      "type": "azurerm_resource_group",
+      "name": "lz",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "rg-lz-dev",
+          "location": "uksouth",
+          "tags": {
+            "environment": "dev",
+            "project": "mini-landing-zone",
+            "managed_by": "opentofu",
+            "framework": "CAF",
+            "owner": "platform-team"
+          }
+        }
+      }
+    }
+  ]
+}
