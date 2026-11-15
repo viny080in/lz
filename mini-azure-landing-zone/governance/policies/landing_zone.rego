@@ -99,7 +99,7 @@ deny contains msg if {
 
     environment := object.get(after.tags, "environment", "")
 
-    not environment in {"dev", "test", "prod"}
+    not environment in {"dev", "test", "prod", "shared"}
 
     msg := sprintf(
         "Invalid environment tag on resource: %s",

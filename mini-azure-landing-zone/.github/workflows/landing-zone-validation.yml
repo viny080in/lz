@@ -1,0 +1,91 @@
+
+name: Azure Landing Zone Validation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  tofu-validation:
+    name: OpenTofu Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.0
+
+      - name: Check formatting
+        run: tofu fmt -check -recursive
+
+      - name: Initialize OpenTofu
+        run: tofu init -backend=false
+
+      - name: Validate configuration
+        run: tofu validate
+
+  opa-validation:
+    name: OPA Governance Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: 1.22.4
+
+      - name: Validate policy syntax
+        run: |
+          opa check --strict governance/policies/
+
+      - name: Landing zone positive test
+        run: |
+          opa eval --format=raw \
+            --data governance/policies/landing_zone.rego \
+            --input tests/valid-plan.json \
+            'count(data.landingzone.deny) == 0' \
+            | grep -qx true
+
+      - name: Landing zone negative test
+        run: |
+          opa eval --format=raw \
+            --data governance/policies/landing_zone.rego \
+            --input tests/invalid-plan.json \
+            'count(data.landingzone.deny) > 0' \
+            | grep -qx true
+
+      - name: Network positive test
+        run: |
+          opa eval --format=raw \
+            --data governance/policies/network_governance.rego \
+            --input tests/network/valid-network-plan.json \
+            'count(data.networkgovernance.deny) == 0' \
+            | grep -qx true
+
+      - name: Network negative test
+        run: |
+          opa eval --format=raw \
+            --data governance/policies/network_governance.rego \
+            --input tests/network/invalid-network-plan.json \
+            'count(data.networkgovernance.deny) > 0' \
+            | grep -qx true

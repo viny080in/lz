@@ -1,0 +1,221 @@
+{
+  "resource_changes": [
+    {
+      "type": "azurerm_virtual_network",
+      "change": {
+        "before": null,
+        "after": {
+          "address_space": [
+            "10.10.0.0/16"
+          ],
+          "name": "vnet-lz-hub"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "hub"
+    },
+    {
+      "type": "azurerm_virtual_network",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "vnet-lz-dev",
+          "address_space": [
+            "10.99.0.0/16"
+          ]
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "lz"
+    },
+    {
+      "type": "azurerm_virtual_network",
+      "change": {
+        "before": null,
+        "after": {
+          "address_space": [
+            "10.20.0.0/16"
+          ],
+          "name": "vnet-lz-prod"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "prod"
+    },
+    {
+      "type": "azurerm_virtual_network_peering",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "peer-hub-to-dev"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "peer-hub-to-dev"
+    },
+    {
+      "type": "azurerm_virtual_network_peering",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "peer-dev-to-hub"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "peer-dev-to-hub"
+    },
+    {
+      "type": "azurerm_virtual_network_peering",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "peer-prod-to-hub"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "peer-prod-to-hub"
+    },
+    {
+      "type": "azurerm_subnet_network_security_group_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "dev_workload"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "dev_workload"
+    },
+    {
+      "type": "azurerm_subnet_network_security_group_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "dev_management"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "dev_management"
+    },
+    {
+      "type": "azurerm_subnet_network_security_group_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "prod_application"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "prod_application"
+    },
+    {
+      "type": "azurerm_subnet_network_security_group_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "prod_data"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "prod_data"
+    },
+    {
+      "type": "azurerm_subnet_route_table_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "dev_workload"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "dev_workload"
+    },
+    {
+      "type": "azurerm_subnet_route_table_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "dev_management"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "dev_management"
+    },
+    {
+      "type": "azurerm_subnet_route_table_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "prod_application"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "prod_application"
+    },
+    {
+      "type": "azurerm_subnet_route_table_association",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "prod_data"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "prod_data"
+    },
+    {
+      "type": "azurerm_firewall_policy",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "afwp-lz-hub"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "hub"
+    },
+    {
+      "type": "azurerm_firewall_policy_rule_collection_group",
+      "change": {
+        "before": null,
+        "after": {
+          "name": "rcg-lz-hub-baseline"
+        },
+        "actions": [
+          "create"
+        ]
+      },
+      "name": "hub"
+    }
+  ]
+}
