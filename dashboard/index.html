@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Currency Platform Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f3f6fb;color:#172033}
+header{background:#14243b;color:white;padding:24px 5%;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:23px}
+header span{color:#9db3ce;font-size:13px}
+main{max-width:1150px;margin:30px auto;padding:0 20px}
+h2{font-size:20px;margin:28px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:20px;box-shadow:0 3px 12px #15243b0a}
+.card h3{margin:0 0 14px;font-size:16px}
+.status{font-size:24px;font-weight:700;margin:10px 0}
+.up{color:#15965c}.down{color:#dc3545}.muted{color:#68778b;font-size:13px}
+input{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:7px;margin:8px 0 14px;font-size:14px}
+button{background:#2459d3;color:white;border:0;border-radius:7px;padding:11px 17px;cursor:pointer;font-weight:600}
+button:hover{background:#1745ad}
+.result{background:#101c2e;color:#c5f4d8;padding:15px;border-radius:8px;white-space:pre-wrap;overflow:auto;min-height:65px;font-size:13px;margin-top:14px}
+.full{grid-column:1/-1}
+.label{font-size:13px;font-weight:600;color:#526176}
+.badge{background:#e5f7ed;color:#13804c;border-radius:20px;padding:5px 10px;font-size:12px}
+footer{text-align:center;color:#758197;padding:35px;font-size:12px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Currency Platform</h1>
+    <span>Microservices & API Gateway Management</span>
+  </div>
+  <span>Local Environment</span>
+</header>
+
+<main>
+
+<h2>System Overview</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Forex Service</h3>
+    <div id="forexStatus" class="status">Checking...</div>
+    <div class="muted">Port 8098</div>
+  </div>
+  <div class="card">
+    <h3>Conversion Service</h3>
+    <div id="conversionStatus" class="status">Checking...</div>
+    <div class="muted">Port 8099</div>
+  </div>
+  <div class="card">
+    <h3>Kong Gateway</h3>
+    <div id="kongStatus" class="status">Checking...</div>
+    <div id="kongVersion" class="muted">Port 8000 / Admin 8001</div>
+  </div>
+</div>
+
+<h2>API Security</h2>
+<div class="card">
+  <h3>API Key Authentication</h3>
+  <label class="label" for="apiKey">Enter your Kong API key</label>
+  <input id="apiKey" type="password" placeholder="Enter API key">
+  <div class="muted">The key is entered by you and is not stored by this page.</div>
+  <p><span class="badge">Key Authentication configured</span></p>
+  <p><span class="badge">Rate Limiting: 10 requests/minute</span></p>
+</div>
+
+<h2>Forex API Tester</h2>
+<div class="card">
+  <h3>Currency Exchange</h3>
+  <div class="grid">
+    <div>
+      <label class="label">From currency</label>
+      <input id="forexFrom" value="USD">
+    </div>
+    <div>
+      <label class="label">To currency</label>
+      <input id="forexTo" value="INR">
+    </div>
+  </div>
+  <button onclick="testForex()">Test Forex API</button>
+  <div id="forexResult" class="result">Your API response will appear here.</div>
+</div>
+
+<h2>Currency Conversion</h2>
+<div class="card">
+  <h3>Calculate Conversion Amount</h3>
+  <div class="grid">
+    <div>
+      <label class="label">From currency</label>
+      <input id="convertFrom" value="USD">
+    </div>
+    <div>
+      <label class="label">To currency</label>
+      <input id="convertTo" value="INR">
+    </div>
+    <div>
+      <label class="label">Quantity</label>
+      <input id="quantity" type="number" value="10" min="1">
+    </div>
+  </div>
+  <button onclick="testConversion()">Calculate Conversion</button>
+  <div id="conversionResult" class="result">Your conversion response will appear here.</div>
+</div>
+
+<h2>Monitoring</h2>
+<div class="card">
+  <h3>Service Health Details</h3>
+  <div class="actions">
+    <button onclick="refreshHealth()">Refresh Health Status</button>
+  </div>
+  <div id="healthDetails" class="result">Click refresh to retrieve health information.</div>
+  <p class="muted">Health checks refresh automatically every 15 seconds.</p>
+</div>
+
+</main>
+
+<footer>Currency Platform | Spring Boot Microservices | Kong API Gateway</footer>
+
+<script>
+async function getJSON(url,options={}) {
+  const response=await fetch(url,options);
+  const text=await response.text();
+  let data;
+  try { data=JSON.parse(text); } catch { data=text; }
+  return {response,data};
+}
+
+async function checkStatus(id,url,label) {
+  const element=document.getElementById(id);
+  try {
+    const {response,data}=await getJSON(url);
+    if(response.ok) {
+      element.textContent="UP";
+      element.className="status up";
+      if(id==="kongStatus" && data.version) {
+        document.getElementById("kongVersion").textContent=
+          "Kong version "+data.version;
+      }
+      return {service:label,status:"UP",details:data};
+    }
+    throw new Error("HTTP "+response.status);
+  } catch(error) {
+    element.textContent="DOWN";
+    element.className="status down";
+    return {service:label,status:"DOWN",error:error.message};
+  }
+}
+
+async function refreshHealth() {
+  const results=await Promise.all([
+    checkStatus("forexStatus","/health/forex","Forex"),
+    checkStatus("conversionStatus","/health/conversion","Conversion"),
+    checkStatus("kongStatus","/health/kong","Kong")
+  ]);
+  document.getElementById("healthDetails").textContent=
+    JSON.stringify(results,null,2);
+}
+
+function getHeaders() {
+  const key=document.getElementById("apiKey").value.trim();
+  return key ? {"apikey":key} : {};
+}
+
+async function testForex() {
+  const from=document.getElementById("forexFrom").value.trim();
+  const to=document.getElementById("forexTo").value.trim();
+  const output=document.getElementById("forexResult");
+  output.textContent="Calling Forex API...";
+  try {
+    const {response,data}=await getJSON(
+      `/api/forex/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}`,
+      {headers:getHeaders()}
+    );
+    output.textContent=`HTTP ${response.status}\n\n`+
+      JSON.stringify(data,null,2);
+  } catch(error) {
+    output.textContent="Request failed: "+error.message;
+  }
+}
+
+async function testConversion() {
+  const from=document.getElementById("convertFrom").value.trim();
+  const to=document.getElementById("convertTo").value.trim();
+  const quantity=document.getElementById("quantity").value;
+  const output=document.getElementById("conversionResult");
+
+  if(!from || !to || !quantity || Number(quantity)<=0) {
+    output.textContent="Please enter valid currencies and a positive quantity.";
+    return;
+  }
+
+  output.textContent="Calculating...";
+  try {
+    const {response,data}=await getJSON(
+      `/api/conversion/from/${encodeURIComponent(from)}/to/${encodeURIComponent(to)}/quantity/${encodeURIComponent(quantity)}`,
+      {headers:getHeaders()}
+    );
+    output.textContent=`HTTP ${response.status}\n\n`+
+      JSON.stringify(data,null,2);
+  } catch(error) {
+    output.textContent="Request failed: "+error.message;
+  }
+}
+
+refreshHealth();
+setInterval(refreshHealth,15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+
+_format_version: "3.0"
+
+services:
+  - name: forex-service
+    url: http://forex-service:8098
+    routes:
+      - name: forex-route
+        paths:
+          - /currency-exchange
+        strip_path: false
+
+  - name: currency-conversion-service
+    url: http://currency-conversion-service:8099
+    routes:
+      - name: conversion-route
+        paths:
+          - /currency-converter
+        strip_path: false
+
+consumers:
+  - username: currency-client
+    keyauth_credentials:
+      - key: my-currency-api-key-123
+
+plugins:
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      hide_credentials: true
+
+  - name: rate-limiting
+    config:
+      minute: 10
+      policy: local
